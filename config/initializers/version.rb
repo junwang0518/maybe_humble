@@ -5,10 +5,14 @@ module Maybe
     end
 
     def commit_sha
-      if Rails.env.production?
+      if Rails.env.production? || ENV["BUILD_COMMIT_SHA"].present?
         ENV["BUILD_COMMIT_SHA"]
       else
-        `git rev-parse HEAD`.chomp
+        begin
+          `git rev-parse HEAD`.chomp
+        rescue Errno::ENOENT
+          "unknown"
+        end
       end
     end
 

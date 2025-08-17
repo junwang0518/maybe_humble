@@ -3,6 +3,13 @@ class PlaidItemsController < ApplicationController
 
   def new
     region = params[:region] == "eu" ? :eu : :us
+    
+    # Check if Plaid is configured for the requested region
+    unless Current.family.send("can_connect_plaid_#{region}?")
+      redirect_to accounts_path, alert: "Plaid integration is not configured for #{region.to_s.upcase} region. Please contact your administrator to set up Plaid credentials."
+      return
+    end
+
     webhooks_url = region == :eu ? plaid_eu_webhooks_url : plaid_us_webhooks_url
 
     @link_token = Current.family.get_link_token(

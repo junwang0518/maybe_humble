@@ -13,6 +13,7 @@ x-rails-env: &rails_env
   DB_HOST: db
   DB_PORT: 5432
   REDIS_URL: redis://redis:6379/1
+  BUILD_COMMIT_SHA: 308b56961a3796a4139c221bc2428a6e905ce0d4
 
 services:
   web:
@@ -32,6 +33,38 @@ services:
     networks:
       - maybe_net
     command: bundle exec rails server -b 0.0.0.0
+
+  css:
+    image: maybe-app
+    volumes:
+      - .:/rails
+      - bundle-cache:/usr/local/bundle
+    environment:
+      <<: *rails_env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - maybe_net
+    command: bundle exec bin/rails tailwindcss:watch
+
+  worker:
+    image: maybe-app
+    volumes:
+      - .:/rails
+      - bundle-cache:/usr/local/bundle
+    environment:
+      <<: *rails_env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - maybe_net
+    command: bundle exec sidekiq
 
   db:
     image: postgres:15
