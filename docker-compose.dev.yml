@@ -1,0 +1,73 @@
+x-db-env: &db_env
+  POSTGRES_USER: maybe_user
+  POSTGRES_PASSWORD: maybe_password
+  POSTGRES_DB: maybe_development
+
+x-rails-env: &rails_env
+  <<: *db_env
+  SECRET_KEY_BASE: a7523c3d0ae56415046ad8abae168d71074a79534a7062258f8d1d51ac2f76d3c3bc86d86b6b0b307df30d9a6a90a2066a3fa9e67c5e6f374dbd7dd4e0778e13
+  SELF_HOSTED: "true"
+  RAILS_ENV: development
+  RAILS_FORCE_SSL: "false"
+  RAILS_ASSUME_SSL: "false"
+  DB_HOST: db
+  DB_PORT: 5432
+  REDIS_URL: redis://redis:6379/1
+
+services:
+  web:
+    image: maybe-app
+    volumes:
+      - .:/rails
+      - bundle-cache:/usr/local/bundle
+    ports:
+      - 3000:3000
+    environment:
+      <<: *rails_env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - maybe_net
+    command: bundle exec rails server -b 0.0.0.0
+
+  db:
+    image: postgres:15
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      <<: *db_env
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - maybe_net
+
+  redis:
+    image: redis:latest
+    volumes:
+      - redis-data:/data
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - maybe_net
+
+volumes:
+  bundle-cache:
+  postgres-data:
+  redis-data:
+
+networks:
+  maybe_net:
+    driver: bridge

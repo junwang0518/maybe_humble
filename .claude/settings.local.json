@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rbenv install:*)",
+      "Bash(rbenv global:*)",
+      "Bash(rbenv:*)",
+      "Bash(ruby --version)",
+      "Bash(exec zsh)",
+      "Bash(export PATH=\"$HOME/.rbenv/bin:$PATH\")",
+      "Bash(export PATH=\"$HOME/.rbenv/shims:$PATH\")",
+      "Bash(ruby:*)",
+      "Bash(brew install:*)",
+      "Bash(export LDFLAGS=\"-L/usr/local/opt/postgresql@15/lib\")",
+      "Bash(export CPPFLAGS=\"-I/usr/local/opt/postgresql@15/include\")",
+      "Bash(bundle:*)",
+      "Bash(bin/setup:*)",
+      "Bash(docker build:*)",
+      "Bash(docker-compose:*)",
+      "Bash(docker compose:*)",
+      "Bash(curl:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
